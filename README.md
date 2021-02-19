@@ -1,0 +1,1 @@
+# zabbix-mysql-partitioing-perl
