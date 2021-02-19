@@ -11,14 +11,14 @@ openlog("mysql_zbx_part", "ndelay,pid", LOG_LOCAL0);
 my $db_schema = 'zabbix';
 my $dsn = 'DBI:mysql:'.$db_schema.':mysql_socket=/var/lib/mysql/mysql.sock';
 my $db_user_name = 'zabbix';
-my $db_password = 'zabbix';
-my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '30'},
-		'history_log' => { 'period' => 'day', 'keep_history' => '30'},
-		'history_str' => { 'period' => 'day', 'keep_history' => '30'},
-		'history_text' => { 'period' => 'day', 'keep_history' => '30'},
-		'history_uint' => { 'period' => 'day', 'keep_history' => '30'},
-		'trends' => { 'period' => 'month', 'keep_history' => '2'},
-		'trends_uint' => { 'period' => 'month', 'keep_history' => '2'},
+my $db_password = 'password';
+my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
+		'history_log' => { 'period' => 'day', 'keep_history' => '60'},
+		'history_str' => { 'period' => 'day', 'keep_history' => '60'},
+		'history_text' => { 'period' => 'day', 'keep_history' => '60'},
+		'history_uint' => { 'period' => 'day', 'keep_history' => '60'},
+		'trends' => { 'period' => 'month', 'keep_history' => '12'},
+		'trends_uint' => { 'period' => 'month', 'keep_history' => '12'},
 
 # comment next 5 lines if you partition zabbix database starting from 2.2
 # they usually used for zabbix database before 2.2
