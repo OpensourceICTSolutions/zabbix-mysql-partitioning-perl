@@ -22,7 +22,30 @@ Then add a cronjob with:
 crontab -e
 ```
 
-Last, add the following line:
+Add the following line:
 ```
 0 23 * * * /usr/share/zabbix/mysql_zbx_part.pl >/dev/null 2>&1
+```
+
+We also need to install some Perl dependencies with:
+
+```
+yum install perl-DateTime perl-Sys-Syslog
+
+```
+
+or on Debian based systems
+```
+apt-get install libdatetime-perl liblogger-syslog-perl
+```
+
+
+That's it! You are now done and you have setup MySQL partitioing. We could execute the script manually with:
+```
+perl /usr/share/zabbix/mysql_zbx_part.pl
+```
+
+Then we can check and see if it worked with:
+```
+journalctl -t mysql_zbx_part
 ```
