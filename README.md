@@ -6,6 +6,7 @@ This is a script written in Perl to partition the Zabbix database tables. We can
 
 ## How to use the script
 Make sure to partition the database first, if you do not know how. Check out this blog post:
+https://blog.zabbix.com/partitioning-a-zabbix-mysql-database/13531/
 
 Place the script in:
 ```
