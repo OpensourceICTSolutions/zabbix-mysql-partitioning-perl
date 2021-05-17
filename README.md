@@ -2,6 +2,8 @@
 
 Disclaimer: This script isn't made by us, but the current author is unknown. We've added it to Github for ease of access. If you are the original creator of this script, please send us a private message. With that out of the way, let's move on.
 
+Important note: The script is no longer working for MySQL 8. Use MariaDB or check out the stored procedures in the guide below. #1
+
 Welcome to the Opensource ICT Solutions GitHub, where you'll find all kinds of usefull Zabbix resources. This script is a script written in Perl to partition the Zabbix database tables in time based chunks. We can use this script to replace the Zabbix housekeeper process which tends to get too slow once you hit a certain database size.
 
 With the use of MySQL partitioing using fixed History and Trend storage periods for all items we can mitigate this issue and grow our Zabbix database even further.
