@@ -77,6 +77,8 @@ sub check_have_partition {
 # MySQL 5.5
 #	#my $sth = $dbh->prepare(qq{SELECT variable_value FROM information_schema.global_variables WHERE variable_name = 'have_partitioning'});
 #return 1 if $row eq 'YES';
+#
+# End of Mysql 5.5
 
 # MySQL 5.6 + MariaDB
 #	my $sth = $dbh->prepare(qq{SELECT plugin_status FROM information_schema.plugins WHERE plugin_name = 'partition'});
@@ -87,16 +89,20 @@ sub check_have_partition {
 #
 #	$sth->finish();
 #       return 1 if $row eq 'ACTIVE';
+#
+# End of MySQL 5.6 + MariaDB
 
-#MySQL 8.x (NOT MariaDB!)
+# MySQL 8.x (NOT MariaDB!)
 	my $sth = $dbh->prepare(qq{select version();});
 	$sth->execute();
 	my $row = $sth->fetchrow_array();
 	
 	$sth->finish();
         return 1 if $row >= 8;
+#
+# End of MySQL 8.x
 
-#Do not uncomment last }	
+# Do not uncomment last }	
 }
 
 sub create_next_partition {

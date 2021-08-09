@@ -57,6 +57,12 @@ On a Debian based systems run:
 apt-get install libdatetime-perl liblogger-syslog-perl
 ```
 
+MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blog post for more information.
+```
+# MySQL 5.5
+# MySQL 5.6 + MariaDB
+# MySQL 8.x (NOT MariaDB!)
+```
 
 That's it! You are now done and you have setup MySQL partitioing. We could execute the script manually with:
 ```
