@@ -1,6 +1,6 @@
 ## Important notes/bugs: 
 
-#1 The script is no longer working for MySQL 8. Use MariaDB or check out the stored procedures in the guide below.
+#1 The script is FIXED for MySQL 8. It works for both MySQL and MariaDB latest versions and should still work with older versions as well.
 
 # Zabbix MySQL partitioning perl script
 
