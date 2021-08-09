@@ -43,9 +43,10 @@ unless ( check_have_partition() ) {
 	exit 1;
 }
 
-my $sth = $dbh->prepare(qq{SELECT table_name, partition_name, lower(partition_method) as partition_method,
-					rtrim(ltrim(partition_expression)) as partition_expression,
-					partition_description, table_rows
+my $sth = $dbh->prepare(qq{SELECT table_name as table_name, partition_name as partition_name,
+       				lower(partition_method) as partition_method, 
+				rtrim(ltrim(partition_expression)) as partition_expression,
+				partition_description as partition_description, table_rows
 				FROM information_schema.partitions
 				WHERE partition_name IS NOT NULL AND table_schema = ?});
 $sth->execute($db_schema);
@@ -72,21 +73,30 @@ $dbh->disconnect();
 
 sub check_have_partition {
 	my $result = 0;
-# MySQL 5.5
-	#my $sth = $dbh->prepare(qq{SELECT variable_value FROM information_schema.global_variables WHERE variable_name = 'have_partitioning'});
-# MySQL 5.6 + MariaDB
-	my $sth = $dbh->prepare(qq{SELECT plugin_status FROM information_schema.plugins WHERE plugin_name = 'partition'});
 
+# MySQL 5.5
+#	#my $sth = $dbh->prepare(qq{SELECT variable_value FROM information_schema.global_variables WHERE variable_name = 'have_partitioning'});
+#return 1 if $row eq 'YES';
+
+# MySQL 5.6 + MariaDB
+#	my $sth = $dbh->prepare(qq{SELECT plugin_status FROM information_schema.plugins WHERE plugin_name = 'partition'});
+#
+#	$sth->execute();
+#
+#	my $row = $sth->fetchrow_array();
+#
+#	$sth->finish();
+#       return 1 if $row eq 'ACTIVE';
+
+#MySQL 8.x (NOT MariaDB!)
+	my $sth = $dbh->prepare(qq{select version();});
 	$sth->execute();
-
 	my $row = $sth->fetchrow_array();
-
+	
 	$sth->finish();
+        return 1 if $row >= 8;
 
-# MySQL 5.5
-	#return 1 if $row eq 'YES';
-# MySQL 5.6 + MariaDB
-	return 1 if $row eq 'ACTIVE';
+#Do not uncomment last }	
 }
 
 sub create_next_partition {
@@ -97,7 +107,6 @@ sub create_next_partition {
 	for (my $curr_part = 0; $curr_part < $amount_partitions; $curr_part++) {
 		my $next_name = name_next_part($tables->{$table_name}->{'period'}, $curr_part);
 		my $found = 0;
-
 		foreach my $partition (sort keys %{$table_part}) {
 			if ($next_name eq $partition) {
 				syslog(LOG_INFO, "Next partition for $table_name table has already been created. It is $next_name");
