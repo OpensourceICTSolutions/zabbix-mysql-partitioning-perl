@@ -2,6 +2,8 @@
 
 #1 The script is FIXED for MySQL 8. It works for both MySQL and MariaDB latest versions and should still work with older versions as well.
 
+Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB.
+
 # Zabbix MySQL partitioning perl script
 
 Disclaimer: This script isn't made by us, but the current author is unknown. We've added it to Github for ease of access. If you are the original creator of this script, please send us a private message. With that out of the way, let's move on.
