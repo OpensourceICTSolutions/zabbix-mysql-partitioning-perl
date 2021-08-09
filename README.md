@@ -47,7 +47,12 @@ yum install perl-DateTime perl-Sys-Syslog
 
 ```
 
-or on Debian based systems
+If perl-DataTime isn't available on your Centos8 installation make sure to install the powertools repo with:
+```
+yum config-manager --set-enabled powertools
+```
+
+On a Debian based systems run:
 ```
 apt-get install libdatetime-perl liblogger-syslog-perl
 ```
