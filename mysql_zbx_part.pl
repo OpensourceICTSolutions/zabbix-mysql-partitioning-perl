@@ -81,24 +81,24 @@ sub check_have_partition {
 # End of Mysql 5.5
 
 # MySQL 5.6 + MariaDB
-#	my $sth = $dbh->prepare(qq{SELECT plugin_status FROM information_schema.plugins WHERE plugin_name = 'partition'});
-#
-#	$sth->execute();
-#
-#	my $row = $sth->fetchrow_array();
-#
-#	$sth->finish();
-#       return 1 if $row eq 'ACTIVE';
-#
+	my $sth = $dbh->prepare(qq{SELECT plugin_status FROM information_schema.plugins WHERE plugin_name = 'partition'});
+
+	$sth->execute();
+
+	my $row = $sth->fetchrow_array();
+
+	$sth->finish();
+        return 1 if $row eq 'ACTIVE';
+
 # End of MySQL 5.6 + MariaDB
 
 # MySQL 8.x (NOT MariaDB!)
-	my $sth = $dbh->prepare(qq{select version();});
-	$sth->execute();
-	my $row = $sth->fetchrow_array();
+#	my $sth = $dbh->prepare(qq{select version();});
+#	$sth->execute();
+#	my $row = $sth->fetchrow_array();
 	
-	$sth->finish();
-        return 1 if $row >= 8;
+#	$sth->finish();
+#       return 1 if $row >= 8;
 #
 # End of MySQL 8.x
 
