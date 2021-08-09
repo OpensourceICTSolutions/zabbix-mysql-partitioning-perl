@@ -43,7 +43,7 @@ Add the following line:
 We also need to install some Perl dependencies with:
 
 ```
-yum install perl-DateTime perl-Sys-Syslog
+yum install perl-DateTime perl-Sys-Syslog perl-DBI
 
 ```
 
