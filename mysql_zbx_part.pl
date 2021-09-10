@@ -31,6 +31,12 @@ my $amount_partitions = 10;
 
 my $curr_tz = 'Etc/UTC';
 
+# name templates for the different periods
+my $partition_name_templates = { 'day' => 'p%Y_%m_%d',
+		'week' => 'p%Y_w%W',
+		'month' => 'p%Y_%m',
+	};
+
 my $part_tables;
 
 my $dbh = DBI->connect($dsn, $db_user_name, $db_password);
@@ -149,27 +155,16 @@ sub name_next_part {
 	my $period = shift;
 	my $curr_part = shift;
 
-	my $name_template;
+	unless (defined $partition_name_templates->{$period}) {
+		die "unsupported partitioning period '$period'\n";
+	}
 
 	my $curr_date = DateTime->now( time_zone => $curr_tz );
 
 	$curr_date->truncate( to => $period );
 	$curr_date->add( $period.'s' => $curr_part );
 
-	if ( $period eq 'day' ) {
-		$name_template = $curr_date->strftime('p%Y_%m_%d');
-	}
-	elsif ($period eq 'week') {
-		$name_template = $curr_date->strftime('p%Y_w%W');
-	}
-	elsif ($period eq 'month') {
-		$name_template = $curr_date->strftime('p%Y_%m');
-	}
-	else {
-		die "unsupported partitioning scheme '$period'\n";
-	}
-
-	return $name_template;
+	return $curr_date->strftime($partition_name_templates->{$period});
 }
 
 sub date_next_part {
