@@ -160,7 +160,7 @@ sub name_next_part {
 		$name_template = $curr_date->strftime('p%Y_%m_%d');
 	}
 	elsif ($period eq 'week') {
-		$name_template = $curr_date->strftime('p%Y_%m_w%W');
+		$name_template = $curr_date->strftime('p%Y_w%W');
 	}
 	elsif ($period eq 'month') {
 		$name_template = $curr_date->strftime('p%Y_%m');
