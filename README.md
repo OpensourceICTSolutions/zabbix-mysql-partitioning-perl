@@ -75,3 +75,11 @@ Then we can check and see if it worked with:
 ```
 journalctl -t mysql_zbx_part
 ```
+
+### Partitioning by week
+By default history tables are partitioned by day and trends are partitioned by month. It is also possible to partition both types of tables by **week**.
+
+To do so change the **period** value to **week** under **my $tables =**. Also make sure to use a different naming convention for your partition names (2021_w36) and while partitioning make sure to use the correct UNIXTIMESTAMP.
+
+The weekly partitioning setup IS NOT described in the Zabbix blog.
+
