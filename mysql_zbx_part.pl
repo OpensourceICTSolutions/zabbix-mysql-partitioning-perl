@@ -1,10 +1,8 @@
 #!/usr/bin/perl
 use strict;
-use Data::Dumper;
 use DBI;
 use Sys::Syslog qw(:standard :macros);
 use DateTime;
-use POSIX qw(strftime);
 
 openlog("mysql_zbx_part", "ndelay,pid", LOG_LOCAL0);
 
@@ -31,7 +29,7 @@ my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
 		};
 my $amount_partitions = 10;
 
-my $curr_tz = 'Europe/Amsterdam';
+my $curr_tz = 'Etc/UTC';
 
 my $part_tables;
 
@@ -72,8 +70,6 @@ delete_old_data();
 $dbh->disconnect();
 
 sub check_have_partition {
-	my $result = 0;
-
 # MySQL 5.5
 #	#my $sth = $dbh->prepare(qq{SELECT variable_value FROM information_schema.global_variables WHERE variable_name = 'have_partitioning'});
 #return 1 if $row eq 'YES';
@@ -111,19 +107,15 @@ sub create_next_partition {
 	my $period = shift;
 
 	for (my $curr_part = 0; $curr_part < $amount_partitions; $curr_part++) {
-		my $next_name = name_next_part($tables->{$table_name}->{'period'}, $curr_part);
-		my $found = 0;
-		foreach my $partition (sort keys %{$table_part}) {
-			if ($next_name eq $partition) {
-				syslog(LOG_INFO, "Next partition for $table_name table has already been created. It is $next_name");
-				$found = 1;
-			}
-		}
+		my $next_name = name_next_part($period, $curr_part);
 
-		if ( $found == 0 ) {
+		if (grep { $_ eq $next_name } keys %{$table_part}) {
+			syslog(LOG_INFO, "Next partition for $table_name table has already been created. It is $next_name");
+		}
+		else {
 			syslog(LOG_INFO, "Creating a partition for $table_name table ($next_name)");
 			my $query = 'ALTER TABLE '."$db_schema.$table_name".' ADD PARTITION (PARTITION '.$next_name.
-						' VALUES less than (UNIX_TIMESTAMP("'.date_next_part($tables->{$table_name}->{'period'}, $curr_part).'") div 1))';
+						' VALUES less than (UNIX_TIMESTAMP("'.date_next_part($period, $curr_part).'") div 1))';
 			syslog(LOG_DEBUG, $query);
 			$dbh->do($query);
 		}
@@ -136,25 +128,10 @@ sub remove_old_partitions {
 	my $period = shift;
 	my $keep_history = shift;
 
-	my $curr_date = DateTime->now;
-	$curr_date->set_time_zone( $curr_tz );
+	my $curr_date = DateTime->now( time_zone => $curr_tz );
 
-	if ( $period eq 'day' ) {
-		$curr_date->add(days => -$keep_history);
-		$curr_date->add(hours => -$curr_date->strftime('%H'));
-		$curr_date->add(minutes => -$curr_date->strftime('%M'));
-		$curr_date->add(seconds => -$curr_date->strftime('%S'));
-	}
-	elsif ( $period eq 'week' ) {
-	}
-	elsif ( $period eq 'month' ) {
-		$curr_date->add(months => -$keep_history);
-
-		$curr_date->add(days => -$curr_date->strftime('%d')+1);
-		$curr_date->add(hours => -$curr_date->strftime('%H'));
-		$curr_date->add(minutes => -$curr_date->strftime('%M'));
-		$curr_date->add(seconds => -$curr_date->strftime('%S'));
-	}
+	$curr_date->subtract($period.'s' => $keep_history);
+	$curr_date->truncate(to => $period);
 
 	foreach my $partition (sort keys %{$table_part}) {
 		if ($table_part->{$partition}->{'partition_description'} <= $curr_date->epoch) {
@@ -174,26 +151,22 @@ sub name_next_part {
 
 	my $name_template;
 
-	my $curr_date = DateTime->now;
-	$curr_date->set_time_zone( $curr_tz );
+	my $curr_date = DateTime->now( time_zone => $curr_tz );
+
+	$curr_date->truncate( to => $period );
+	$curr_date->add( $period.'s' => $curr_part );
 
 	if ( $period eq 'day' ) {
-		my $curr_date = $curr_date->truncate( to => 'day' );
-		$curr_date->add(days => 1 + $curr_part);
-
 		$name_template = $curr_date->strftime('p%Y_%m_%d');
 	}
 	elsif ($period eq 'week') {
-		my $curr_date = $curr_date->truncate( to => 'week' );
-		$curr_date->add(days => 7 * $curr_part);
-
 		$name_template = $curr_date->strftime('p%Y_%m_w%W');
 	}
 	elsif ($period eq 'month') {
-		my $curr_date = $curr_date->truncate( to => 'month' );
-		$curr_date->add(months => 1 + $curr_part);
-
 		$name_template = $curr_date->strftime('p%Y_%m');
+	}
+	else {
+		die "unsupported partitioning scheme '$period'\n";
 	}
 
 	return $name_template;
@@ -203,29 +176,12 @@ sub date_next_part {
 	my $period = shift;
 	my $curr_part = shift;
 
-	my $period_date;
+	my $curr_date = DateTime->now( time_zone => $curr_tz );
 
-	my $curr_date = DateTime->now;
-	$curr_date->set_time_zone( $curr_tz );
+	$curr_date->truncate( to => $period );
+	$curr_date->add( $period.'s' => 1 + $curr_part );
 
-	if ( $period eq 'day' ) {
-		my $curr_date = $curr_date->truncate( to => 'day' );
-		$curr_date->add(days => 2 + $curr_part);
-		$period_date = $curr_date->strftime('%Y-%m-%d');
-	}
-	elsif ($period eq 'week') {
-		my $curr_date = $curr_date->truncate( to => 'week' );
-		$curr_date->add(days => 7 * $curr_part + 1);
-		$period_date = $curr_date->strftime('%Y-%m-%d');
-	}
-	elsif ($period eq 'month') {
-		my $curr_date = $curr_date->truncate( to => 'month' );
-		$curr_date->add(months => 2 + $curr_part);
-
-		$period_date = $curr_date->strftime('%Y-%m-%d');
-	}
-
-	return $period_date;
+	return $curr_date->strftime('%Y-%m-%d');
 }
 
 sub delete_old_data {
