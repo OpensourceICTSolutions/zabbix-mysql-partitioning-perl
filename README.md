@@ -1,6 +1,7 @@
 ## Important notes/bugs: 
 
 #1 The script is FIXED for MySQL 8. It works for both MySQL and MariaDB latest versions and should still work with older versions as well.
+#2 The weekly partitioning is FIXED.
 
 Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB.
 
@@ -77,6 +78,8 @@ journalctl -t mysql_zbx_part
 ```
 
 ### Partitioning by week
+NOTE: See version 2.1 for older (before 20-09-2021) partitioned databases. Otherwise use 3.0+ upwards (recommended to use current).
+
 By default history tables are partitioned by day and trends are partitioned by month. It is also possible to partition both types of tables by **week**.
 
 To do so change the **period** value to **week** under **my $tables =**. Also make sure to use a different naming convention for your partition names (2021_w36) and while partitioning make sure to use the correct UNIXTIMESTAMP.
