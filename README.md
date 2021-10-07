@@ -1,6 +1,7 @@
 ## Important notes/bugs: 
 
 #1 The script is FIXED for MySQL 8. It works for both MySQL and MariaDB latest versions and should still work with older versions as well.
+
 #2 The weekly partitioning is FIXED.
 
 Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB.
