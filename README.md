@@ -6,9 +6,9 @@
 
 Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB.
 
-Also, see common issue at the bottom of the blog post.
+Also, see common issues at the bottom of the blog post.
 
-# Zabbix MySQL partitioning perl script
+# Zabbix MySQL partitioning Perl script
 
 Disclaimer: This script isn't made by us, but the current author is unknown. We've added it to Github for ease of access. If you are the original creator of this script, please send us a private message. With that out of the way, let's move on.
 
@@ -19,7 +19,7 @@ Welcome to the Opensource ICT Solutions GitHub, where you'll find all kinds of u
 With the use of MySQL partitioing using fixed History and Trend storage periods for all items we can mitigate this issue and grow our Zabbix database even further.
 
 ## How to use the script
-Make sure to partition the database first, if you do not know how. Check out this blog post:
+Make sure to partition the database first. If you do not know how, check out this blog post:
 https://blog.zabbix.com/partitioning-a-zabbix-mysql-database/13531/
 
 Or check out our Zabbix book for a detailed description:
@@ -53,7 +53,7 @@ yum install perl-DateTime perl-Sys-Syslog perl-DBI perl-DBD-mysql
 
 ```
 
-If perl-DataTime isn't available on your Centos8 installation make sure to install the powertools repo with:
+If perl-DateTime isn't available on your Centos8 installation make sure to install the powertools repo with:
 ```
 yum config-manager --set-enabled powertools
 ```
@@ -70,7 +70,7 @@ MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blo
 # MySQL 8.x (NOT MariaDB!)
 ```
 
-That's it! You are now done and you have setup MySQL partitioing. We could execute the script manually with:
+That's it! You are now done and you have setup MySQL partitioning. We could execute the script manually with:
 ```
 perl /usr/share/zabbix/mysql_zbx_part.pl
 ```
