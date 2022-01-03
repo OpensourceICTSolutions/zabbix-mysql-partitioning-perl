@@ -10,9 +10,7 @@ Also, see common issue at the bottom of the blog post.
 
 # Zabbix MySQL partitioning perl script
 
-Disclaimer: This script isn't made by us, the original author is https://github.com/dotneft and the script was initially (slightly) modified by Rihards Olups. We've added it to Github for ease of access. If you are the original creator of this script, please send us a private message. With that out of the way, let's move on.
-
-
+Disclaimer: This script isn't made by us, the original author is https://github.com/dotneft and the script was initially (slightly) modified by Rihards Olups. We've added it to Github for ease of access.
 
 Welcome to the Opensource ICT Solutions GitHub, where you'll find all kinds of usefull Zabbix resources. This script is a script written in Perl to partition the Zabbix database tables in time based chunks. We can use this script to replace the Zabbix housekeeper process which tends to get too slow once you hit a certain database size.
 
