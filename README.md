@@ -10,7 +10,7 @@ Also, see common issue at the bottom of the blog post.
 
 # Zabbix MySQL partitioning perl script
 
-Disclaimer: This script isn't made by us, but the current author is unknown. We've added it to Github for ease of access. If you are the original creator of this script, please send us a private message. With that out of the way, let's move on.
+Disclaimer: This script isn't made by us, the original author is https://github.com/dotneft and the scripts was initially (slightly) modified by Rihard Olups. We've added it to Github for ease of access. If you are the original creator of this script, please send us a private message. With that out of the way, let's move on.
 
 
 
