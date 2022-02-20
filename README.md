@@ -68,6 +68,11 @@ MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blo
 # MySQL 8.x (NOT MariaDB!)
 ```
 
+Uncomment the following line for Zabbix 5.4 and OLDER:
+```
+#       $dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
+```
+
 That's it! You are now done and you have setup MySQL partitioning. We could execute the script manually with:
 ```
 perl /usr/share/zabbix/mysql_zbx_part.pl
