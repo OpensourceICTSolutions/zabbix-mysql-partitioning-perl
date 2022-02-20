@@ -4,6 +4,8 @@
 
 #2 The weekly partitioning is FIXED. Thanks @beinvisible
 
+#3 Zabbix 6 removed the auditlog_details table. The script is compatible with this version now, make sure to uncomment the fix for older Zabbix versions.
+
 Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB.
 
 Also, see common issues at the bottom of the blog post.
