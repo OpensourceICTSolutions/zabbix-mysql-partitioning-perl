@@ -43,7 +43,7 @@ crontab -e
 
 Add the following line:
 ```
-0 23 * * * /usr/share/zabbix/mysql_zbx_part.pl >/dev/null 2>&1
+55 22 * * * /usr/share/zabbix/mysql_zbx_part.pl >/dev/null 2>&1
 ```
 
 We also need to install some Perl dependencies with:
