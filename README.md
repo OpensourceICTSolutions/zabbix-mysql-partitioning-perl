@@ -14,7 +14,7 @@ Also, see common issues at the bottom of the blog post.
 
 Disclaimer: This script isn't made by us, the original author is https://github.com/dotneft and the script was initially (slightly) modified by Rihards Olups. We've added it to Github so we can maintain it and provide easy access to the entire Zabbix community.
 
-Welcome to the Opensource ICT Solutions GitHub, where you'll find all kinds of usefull Zabbix resources. This script is a script written in Perl to partition the Zabbix database tables in time based chunks. We can use this script to replace the Zabbix housekeeper process which tends to get too slow once you hit a certain database size.
+Welcome to the Opensource ICT Solutions GitHub, where you'll find all kinds of useful Zabbix resources. This script is a script written in Perl to partition the Zabbix database tables in time based chunks. We can use this script to replace the Zabbix housekeeper process which tends to get too slow once you hit a certain database size.
 
 With the use of MySQL partitioing using fixed History and Trend storage periods for all items we can mitigate this issue and grow our Zabbix database even further.
 
