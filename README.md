@@ -53,7 +53,7 @@ yum install perl-DateTime perl-Sys-Syslog perl-DBI perl-DBD-mysql
 
 ```
 
-If perl-DateTime isn't available on your Centos8 installation make sure to install the powertools repo with:
+If perl-DateTime isn't available on your RHEL installation make sure to install the powertools repo with:
 ```
 yum config-manager --set-enabled powertools
 ```
