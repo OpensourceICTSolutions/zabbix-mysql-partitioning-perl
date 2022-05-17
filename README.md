@@ -60,7 +60,7 @@ yum config-manager --set-enabled powertools
 
 On a Debian based systems run:
 ```
-apt-get install libdatetime-perl liblogger-syslog-perl
+apt-get install libdatetime-perl liblogger-syslog-perl libdbd-mysql-perl
 ```
 
 MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blog post for more information.
