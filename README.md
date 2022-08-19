@@ -55,9 +55,16 @@ yum install perl-DateTime perl-Sys-Syslog perl-DBI perl-DBD-mysql
 
 ```
 
-If perl-DateTime isn't available on your RHEL installation make sure to install the powertools repo with:
+If perl-DateTime isn't available on your RHEL based installation make sure to install the powertools repo with:
 ```
 yum config-manager --set-enabled powertools
+```
+
+or for genuine-RedHat:
+
+```
+sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
+
 ```
 
 On a Debian based systems run:
