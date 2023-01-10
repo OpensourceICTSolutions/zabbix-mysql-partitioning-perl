@@ -6,7 +6,7 @@
 
 #3 Zabbix 6 removed the auditlog_details table. The script is compatible with this version now, make sure to uncomment the fix for older Zabbix versions.
 
-#4 For RHEL9 based systems use the CRB repository (Rocky Linux 9 specific) to get Perl-DataTime. sudo dnf config-manager --set-enabled crb
+#4 For RHEL9 based systems use the CRB repository (Rocky Linux 9 specific) to get Perl-DataTime. dnf config-manager --set-enabled crb
 
 Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB.
 
@@ -63,8 +63,13 @@ yum config-manager --set-enabled powertools
 or for genuine-RedHat:
 
 ```
-sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
+subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
 
+```
+Or Oracle Linux
+
+```
+dnf config-manager --set-enabled ol8_codeready_builder
 ```
 
 On a Debian based systems run:
