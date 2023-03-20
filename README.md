@@ -72,7 +72,7 @@ Or Oracle Linux
 dnf config-manager --set-enabled ol8_codeready_builder
 ```
 
-On a Debian based systems run:
+On a Debian based systems (like Ubuntu) run:
 ```
 apt-get install libdatetime-perl liblogger-syslog-perl libdbd-mysql-perl
 ```
