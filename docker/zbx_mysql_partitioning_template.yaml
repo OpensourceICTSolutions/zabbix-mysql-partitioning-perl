@@ -1,0 +1,54 @@
+zabbix_export:
+  version: '6.0'
+  date: '2023-05-20T04:16:07Z'
+  groups:
+    -
+      uuid: f95e6745d71947769f0bc3576f009fcc
+      name: Templates/Databases/MySQL Partitioning
+  templates:
+    -
+      uuid: 951111adbeab4e91a61b50c7b5fcbca8
+      template: 'Zabbix database partitioning'
+      name: 'Zabbix database partitioning'
+      description: 'Checks if the script that performs the daily maintenance of the partitions of the "history" and "trends" tables in the MySQL database of Zabbix is being executed.'
+      groups:
+        -
+          name: Templates/Databases/MySQL Partitioning
+      items:
+        -
+          uuid: 531df4426c094f11a9c42680113243aa
+          name: 'Partitioning script execution state'
+          type: TRAP
+          key: zabbix.db.partitioning
+          delay: '0'
+          valuemap:
+            name: 'Script execution state'
+          tags:
+            -
+              tag: component
+              value: database
+          triggers:
+            -
+              uuid: c2af3acc3748476c8dd48447e3c1b996
+              expression: |
+                last(/Zabbix database partitioning/zabbix.db.partitioning)<>1
+                or
+                nodata(/Zabbix database partitioning/zabbix.db.partitioning,50h,"strict")=1
+              name: 'Database tables partitioning script was not executed'
+              priority: AVERAGE
+              description: 'This means that, if not fixed, new partitions will not be created and Zabbix may stop logging metrics due to lack of partitions. See problem information in the partitioning script log.'
+              tags:
+                -
+                  tag: scope
+                  value: capacity
+      valuemaps:
+        -
+          uuid: 8d55537d35014da58ecc3572805f16d0
+          name: 'Script execution state'
+          mappings:
+            -
+              value: '1'
+              newvalue: Executed
+            -
+              value: '0'
+              newvalue: 'Not executed'
