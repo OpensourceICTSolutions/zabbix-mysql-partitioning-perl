@@ -22,6 +22,7 @@ if ($is_container) {
 	# open log file
 	open( OUTPUT, ">>", $ENV{'LOG_PATH'} ) or die $!;
 
+	# do not manually modify the next 7 lines, they are only used when the script is run in a container
 	my $db_schema = $ENV{'DB_DATABASE'};
 	my $db_host = $ENV{'DB_HOST'};
 	my $db_port = $ENV{'DB_PORT'};
@@ -35,19 +36,7 @@ else {
 	openlog("mysql_zbx_part", "ndelay,pid", LOG_LOCAL0);
 }
 
-sub log_writer {
-	my $log_line = shift;
 
-	if ($is_container) {
-		print OUTPUT $log_line . '\n';
-	}
-	else {
-		my $log_priority = shift;
-		syslog($log_priority, $log_line);
-	}
-}
-
-# comment next 5 lines if you are using docker container
 my $db_schema = 'zabbix';
 my $dsn = 'DBI:mysql:'.$db_schema.':mysql_socket=/var/lib/mysql/mysql.sock';
 my $db_user_name = 'zabbix';
@@ -226,4 +215,16 @@ sub delete_old_data {
 	$dbh->do("TRUNCATE housekeeper");
 # Uncomment the following line for Zabbix 5.4 and earlier
 #	$dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
+}
+
+sub log_writer {
+	my $log_line = shift;
+
+	if ($is_container) {
+		print OUTPUT $log_line . '\n';
+	}
+	else {
+		my $log_priority = shift;
+		syslog($log_priority, $log_line);
+	}
 }
