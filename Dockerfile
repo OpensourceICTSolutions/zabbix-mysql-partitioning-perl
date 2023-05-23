@@ -14,9 +14,10 @@ RUN apt-get update \
   && useradd -r -u 999 zabbix
 
 COPY ./mysql_zbx_part.pl /usr/local/bin/
-COPY ./zabbix_exec_db_partitioning.sh /usr/local/bin/
+COPY ./docker/zabbix_exec_db_partitioning.sh /usr/local/bin/
 
-RUN chmod 755 /usr/local/bin/mysql_zbx_part.pl /usr/local/bin/zabbix_exec_db_partitioning.sh
+RUN sed -i 's~my $is_container = 0;~my $is_container = 1;~g' /usr/local/bin/mysql_zbx_part.pl \
+  && chmod 755 /usr/local/bin/mysql_zbx_part.pl /usr/local/bin/zabbix_exec_db_partitioning.sh
 
 USER zabbix
 

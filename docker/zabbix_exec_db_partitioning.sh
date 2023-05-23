@@ -7,4 +7,7 @@ echo -e "\n$(date '+%Y-%m-%d %H:%M') - Starting script execution..."
   && ITEM_VALUE=1 \
   || ITEM_VALUE=0
 
-/usr/bin/zabbix_sender -z $ZABBIX_SERVER -s "$ZABBIX_HOST" -k "$ZABBIX_ITEM_KEY" -o $ITEM_VALUE
+
+if [[ -n "${ZABBIX_SERVER}" ]]; then
+  /usr/bin/zabbix_sender -z $ZABBIX_SERVER -s "$ZABBIX_HOST" -k "$ZABBIX_ITEM_KEY" -o $ITEM_VALUE
+fi
