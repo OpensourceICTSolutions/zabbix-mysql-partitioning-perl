@@ -1,15 +1,59 @@
 #!/usr/bin/perl
 use strict;
 use DBI;
-use Sys::Syslog qw(:standard :macros);
 use DateTime;
 
-openlog("mysql_zbx_part", "ndelay,pid", LOG_LOCAL0);
+# the Dockerfile will change the value to 1 in the container build process
+my $is_container = 0;
 
+if ($is_container) {
+	# check if environment variables exists
+	if (not defined $ENV{'DB_HOST'}
+		or not defined $ENV{'DB_PORT'}
+		or not defined $ENV{'DB_DATABASE'}
+		or not defined $ENV{'DB_USER'}
+		or not defined $ENV{'DB_PASSWORD'}
+		or not defined $ENV{'LOG_PATH'}
+		or not defined $ENV{'TZ'}
+	) {
+		print "Environment variables are missing! Exiting...\n";
+		exit 1;
+	}
+	# open log file
+	open( OUTPUT, ">>", $ENV{'LOG_PATH'} ) or die $!;
+
+	my $db_schema = $ENV{'DB_DATABASE'};
+	my $db_host = $ENV{'DB_HOST'};
+	my $db_port = $ENV{'DB_PORT'};
+	my $dsn = 'DBI:mysql:'.$db_schema.':host='.$db_host.';port='.$db_port;
+	my $db_user_name = $ENV{'DB_USER'};
+	my $db_password = $ENV{'DB_PASSWORD'};
+	my $curr_tz = $ENV{'TZ'};
+}
+else {
+	use Sys::Syslog qw(:standard :macros);
+	openlog("mysql_zbx_part", "ndelay,pid", LOG_LOCAL0);
+}
+
+sub log_writer {
+	my $log_line = shift;
+
+	if ($is_container) {
+		print OUTPUT $log_line . '\n';
+	}
+	else {
+		my $log_priority = shift;
+		syslog($log_priority, $log_line);
+	}
+}
+
+# comment next 5 lines if you are using docker container
 my $db_schema = 'zabbix';
 my $dsn = 'DBI:mysql:'.$db_schema.':mysql_socket=/var/lib/mysql/mysql.sock';
 my $db_user_name = 'zabbix';
 my $db_password = 'password';
+my $curr_tz = 'Etc/UTC';
+
 my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
 		'history_log' => { 'period' => 'day', 'keep_history' => '60'},
 		'history_str' => { 'period' => 'day', 'keep_history' => '60'},
@@ -29,8 +73,6 @@ my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
 		};
 my $amount_partitions = 10;
 
-my $curr_tz = 'Etc/UTC';
-
 # name templates for the different periods
 my $partition_name_templates = { 'day' => 'p%Y_%m_%d',
 		'week' => 'p%Y_w%W',
@@ -43,7 +85,7 @@ my $dbh = DBI->connect($dsn, $db_user_name, $db_password);
 
 unless ( check_have_partition() ) {
 	print "Your installation of MySQL does not support table partitioning.\n";
-	syslog(LOG_CRIT, 'Your installation of MySQL does not support table partitioning.');
+	log_writer('Your installation of MySQL does not support table partitioning.', LOG_CRIT);
 	exit 1;
 }
 
@@ -63,7 +105,7 @@ $sth->finish();
 
 foreach my $key (sort keys %{$tables}) {
 	unless (defined($part_tables->{$key})) {
-		syslog(LOG_ERR, 'Partitioning for "'.$key.'" is not found! The table might be not partitioned.');
+		log_writer('Partitioning for "'.$key.'" is not found! The table might be not partitioned.', LOG_ERR);
 		next;
 	}
 
@@ -116,13 +158,13 @@ sub create_next_partition {
 		my $next_name = name_next_part($period, $curr_part);
 
 		if (grep { $_ eq $next_name } keys %{$table_part}) {
-			syslog(LOG_INFO, "Next partition for $table_name table has already been created. It is $next_name");
+			log_writer("Next partition for $table_name table has already been created. It is $next_name", LOG_INFO);
 		}
 		else {
-			syslog(LOG_INFO, "Creating a partition for $table_name table ($next_name)");
+			log_writer("Creating a partition for $table_name table ($next_name)", LOG_INFO);
 			my $query = 'ALTER TABLE '."$db_schema.$table_name".' ADD PARTITION (PARTITION '.$next_name.
 						' VALUES less than (UNIX_TIMESTAMP("'.date_next_part($period, $curr_part).'") div 1))';
-			syslog(LOG_DEBUG, $query);
+			log_writer($query, LOG_DEBUG);
 			$dbh->do($query);
 		}
 	}
@@ -141,11 +183,11 @@ sub remove_old_partitions {
 
 	foreach my $partition (sort keys %{$table_part}) {
 		if ($table_part->{$partition}->{'partition_description'} <= $curr_date->epoch) {
-			syslog(LOG_INFO, "Removing old $partition partition from $table_name table");
+			log_writer("Removing old $partition partition from $table_name table", LOG_INFO);
 
 			my $query = "ALTER TABLE $db_schema.$table_name DROP PARTITION $partition";
 
-			syslog(LOG_DEBUG, $query);
+			log_writer($query, LOG_DEBUG);
 			$dbh->do($query);
 		}
 	}
