@@ -128,14 +128,19 @@ sudo chown root: .env
 sudo chmod 400 .env
 ```
 
-The command below runs the container to perform the partitioning tasks and, when the perl script finishes executing, the container is automatically stopped and deleted. Change `project_dir` to the root directory of this Git repository on your file system.
+The command below runs the container to perform the partitioning tasks and, when the perl script finishes executing, the container is automatically stopped and deleted.
 
 ```
 sudo docker run --rm \
   --name zabbix-db-partitioning \
-  -v /project_dir/logs:/logs \
-  --env-file /project_dir/.env \
+  -v ./logs:/logs \
+  --env-file ./.env \
   zabbix-db-partitioning
+```
+
+After running the container, you can check the logs:
+```
+cat logs/mysql_zbx_part.log
 ```
 
 Edit `root` user crontab:
