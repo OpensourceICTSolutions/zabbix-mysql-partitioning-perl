@@ -39,6 +39,8 @@ Uncomment the following line for Zabbix 5.4 and OLDER:
 #       $dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
 ```
 
+[Run directly on your server](#run-directly-on-your-server) or [run in a Docker container](#run-in-a-docker-container).
+
 ### Run directly on your server
 
 Place the script in:
@@ -114,7 +116,7 @@ Create log directory. This folder will be mounted as a volume in the container, 
 
 ```
 mkdir logs
-chgrp 999 logs/
+sudo chgrp 999 logs/
 chmod 775 logs/
 ```
 
@@ -122,22 +124,21 @@ Create the `.env` file based on the [template](docker/.env.example) and edit it 
 
 ```
 cp docker/.env.example .env
-chown root. .env
-chmod 400 .env
+sudo chown root: .env
+sudo chmod 400 .env
 ```
 
 The command below runs the container to perform the partitioning tasks and, when the perl script finishes executing, the container is automatically stopped and deleted. Change `project_dir` to the root directory of this Git repository on your file system.
 
 ```
-docker run --rm \
+sudo docker run --rm \
   --name zabbix-db-partitioning \
   -v /project_dir/logs:/logs \
   --env-file /project_dir/.env \
-  zabbix-db-partitioning \
-  sh -c 'exec zabbix_exec_db_partitioning.sh >> $LOG_PATH 2>&1'
+  zabbix-db-partitioning
 ```
 
-Edit crontab:
+Edit `root` user crontab:
 
 ```
 crontab -e
@@ -146,7 +147,7 @@ crontab -e
 Add the line in the crontab, adjusting the schedule. Change `project_dir` to the root directory of this Git repository on your file system.
 
 ```
-55 22 * * * docker run --rm --name zabbix-db-partitioning -v /project_dir/logs:/logs --env-file /project_dir/.env zabbix-db-partitioning sh -c 'exec zabbix_exec_db_partitioning.sh >> $LOG_PATH 2>&1'
+55 22 * * * docker run --rm --name zabbix-db-partitioning -v /project_dir/logs:/logs --env-file /project_dir/.env zabbix-db-partitioning
 ```
 
 To monitor Perl script execution:

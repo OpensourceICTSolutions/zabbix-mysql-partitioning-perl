@@ -5,6 +5,14 @@ use DateTime;
 
 # the Dockerfile will change the value to 1 in the container build process
 my $is_container = 0;
+# initializing some variables
+my $db_schema;
+my $db_host;
+my $db_port;
+my $dsn;
+my $db_user_name;
+my $db_password;
+my $curr_tz;
 
 if ($is_container) {
 	# check if environment variables exists
@@ -23,25 +31,25 @@ if ($is_container) {
 	open( OUTPUT, ">>", $ENV{'LOG_PATH'} ) or die $!;
 
 	# do not manually modify the next 7 lines, they are only used when the script is run in a container
-	my $db_schema = $ENV{'DB_DATABASE'};
-	my $db_host = $ENV{'DB_HOST'};
-	my $db_port = $ENV{'DB_PORT'};
-	my $dsn = 'DBI:mysql:'.$db_schema.':host='.$db_host.';port='.$db_port;
-	my $db_user_name = $ENV{'DB_USER'};
-	my $db_password = $ENV{'DB_PASSWORD'};
-	my $curr_tz = $ENV{'TZ'};
+	$db_schema = $ENV{'DB_DATABASE'};
+	$db_host = $ENV{'DB_HOST'};
+	$db_port = $ENV{'DB_PORT'};
+	$dsn = 'DBI:mysql:'.$db_schema.':host='.$db_host.';port='.$db_port;
+	$db_user_name = $ENV{'DB_USER'};
+	$db_password = $ENV{'DB_PASSWORD'};
+	$curr_tz = $ENV{'TZ'};
 }
 else {
 	use Sys::Syslog qw(:standard :macros);
 	openlog("mysql_zbx_part", "ndelay,pid", LOG_LOCAL0);
+
+	# edit next 5 lines if the script is run directly in your server
+	$db_schema = 'zabbix';
+	$dsn = 'DBI:mysql:'.$db_schema.':mysql_socket=/var/lib/mysql/mysql.sock';
+	$db_user_name = 'zabbix';
+	$db_password = 'password';
+	$curr_tz = 'Etc/UTC';
 }
-
-
-my $db_schema = 'zabbix';
-my $dsn = 'DBI:mysql:'.$db_schema.':mysql_socket=/var/lib/mysql/mysql.sock';
-my $db_user_name = 'zabbix';
-my $db_password = 'password';
-my $curr_tz = 'Etc/UTC';
 
 my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
 		'history_log' => { 'period' => 'day', 'keep_history' => '60'},
@@ -129,7 +137,7 @@ sub check_have_partition {
 #	my $sth = $dbh->prepare(qq{select version();});
 #	$sth->execute();
 #	my $row = $sth->fetchrow_array();
-	
+ 
 #	$sth->finish();
 #       return 1 if $row >= 8;
 #
@@ -221,7 +229,7 @@ sub log_writer {
 	my $log_line = shift;
 
 	if ($is_container) {
-		print OUTPUT $log_line . '\n';
+		print OUTPUT $log_line . "\n";
 	}
 	else {
 		my $log_priority = shift;
