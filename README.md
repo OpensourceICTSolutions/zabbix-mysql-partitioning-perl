@@ -59,6 +59,10 @@ If perl-DateTime isn't available on your RHEL based installation make sure to in
 ```
 yum config-manager --set-enabled powertools
 ```
+On RHEL 9 based:
+```
+dnf config-manager --enable crb
+```
 
 or for genuine-RedHat:
 
