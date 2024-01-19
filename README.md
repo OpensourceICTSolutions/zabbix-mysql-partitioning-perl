@@ -25,7 +25,7 @@ Make sure to partition the database first. If you do not know how, check out thi
 https://blog.zabbix.com/partitioning-a-zabbix-mysql-database/13531/
 
 Or check out our Zabbix book for a detailed description:
-https://www.amazon.com/Zabbix-Infrastructure-Monitoring-Cookbook-maintaining/dp/1800202237
+https://www.amazon.com/Zabbix-Infrastructure-Monitoring-Cookbook-maintaining-dp-1801078327/dp/1801078327
 
 
 Place the script in:
