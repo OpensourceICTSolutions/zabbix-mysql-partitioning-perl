@@ -8,7 +8,9 @@
 
 #4 For RHEL9 based systems use the CRB repository (Rocky Linux 9 specific) to get Perl-DataTime. dnf config-manager --set-enabled crb
 
-Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB.
+#5 For ZBX7.0 a new table was added (history_bin). As such, for older version we can comment the line that partitions this table.
+
+Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB and Zabbix version higher than 7.0.
 
 Also, see common issues at the bottom of the blog post.
 
@@ -91,6 +93,11 @@ MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blo
 Uncomment the following line for Zabbix 5.4 and OLDER:
 ```
 #       $dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
+```
+
+Comment the following line for Zabbix 6.4 and OLDER:
+```
+'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
 ```
 
 That's it! You are now done and you have setup MySQL partitioning. We could execute the script manually with:
