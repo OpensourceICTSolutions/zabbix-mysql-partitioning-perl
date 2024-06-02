@@ -56,6 +56,8 @@ my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
 		'history_str' => { 'period' => 'day', 'keep_history' => '60'},
 		'history_text' => { 'period' => 'day', 'keep_history' => '60'},
 		'history_uint' => { 'period' => 'day', 'keep_history' => '60'},
+# Comment the history_bin line below if you're running Zabbix versions older than 7.0
+                'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
 		'trends' => { 'period' => 'month', 'keep_history' => '12'},
 		'trends_uint' => { 'period' => 'month', 'keep_history' => '12'},
 

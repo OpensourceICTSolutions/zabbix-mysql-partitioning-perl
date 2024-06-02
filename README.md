@@ -8,7 +8,9 @@
 
 #4 For RHEL9 based systems use the CRB repository (Rocky Linux 9 specific) to get Perl-DataTime. dnf config-manager --set-enabled crb
 
-Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB.
+#5 For ZBX7.0 a new table was added (history_bin). As such, for older version we can comment the line that partitions this table.
+
+Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB and Zabbix version higher than 7.0.
 
 Also, see common issues at the bottom of the blog post.
 
@@ -25,7 +27,7 @@ Make sure to partition the database first. If you do not know how, check out thi
 https://blog.zabbix.com/partitioning-a-zabbix-mysql-database/13531/
 
 Or check out our Zabbix book for a detailed description:
-https://www.amazon.com/Zabbix-Infrastructure-Monitoring-Cookbook-maintaining/dp/1800202237
+https://www.amazon.com/Zabbix-Infrastructure-Monitoring-Cookbook-maintaining-dp-1801078327/dp/1801078327
 
 MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blog post for more information.
 ```
@@ -39,18 +41,23 @@ Uncomment the following line for Zabbix 5.4 and OLDER:
 #       $dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
 ```
 
+Comment the following line for Zabbix 6.4 and OLDER:
+```
+'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
+```
+
 [Run directly on your server](#run-directly-on-your-server) or [run in a Docker container](#run-in-a-docker-container).
 
 ### Run directly on your server
 
-Place the script in:
+Place the script in (create the folder if it doesn't exist):
 ```
-/usr/share/zabbix/
+/usr/lib/zabbix/
 ```
 
 Then make it executable with:
 ```
-chmod +x /usr/share/zabbix/mysql_zbx_part.pl
+chmod 750 /usr/lib/zabbix/mysql_zbx_part.pl
 ```
 
 Now add a cronjob with:
@@ -60,7 +67,7 @@ crontab -e
 
 Add the following line:
 ```
-55 22 * * * /usr/share/zabbix/mysql_zbx_part.pl >/dev/null 2>&1
+55 22 * * * /usr/lib/zabbix/mysql_zbx_part.pl >/dev/null 2>&1
 ```
 
 We also need to install some Perl dependencies with:
@@ -73,6 +80,10 @@ yum install perl-DateTime perl-Sys-Syslog perl-DBI perl-DBD-mysql
 If perl-DateTime isn't available on your RHEL based installation make sure to install the powertools repo with:
 ```
 yum config-manager --set-enabled powertools
+```
+On RHEL 9 based:
+```
+dnf config-manager --enable crb
 ```
 
 or for genuine-RedHat:
