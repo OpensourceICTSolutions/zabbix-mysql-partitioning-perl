@@ -105,7 +105,7 @@ apt-get install libdatetime-perl liblogger-syslog-perl libdbd-mysql-perl
 
 That's it! You are now done and you have setup MySQL partitioning. We could execute the script manually with:
 ```
-perl /usr/share/zabbix/mysql_zbx_part.pl
+perl /usr/lib/zabbix/mysql_zbx_part.pl
 ```
 
 Then we can check and see if it worked with:
