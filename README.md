@@ -29,6 +29,26 @@ https://blog.zabbix.com/partitioning-a-zabbix-mysql-database/13531/
 Or check out our Zabbix book for a detailed description:
 https://www.amazon.com/Zabbix-Infrastructure-Monitoring-Cookbook-maintaining-dp-1801078327/dp/1801078327
 
+MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blog post for more information.
+```
+# MySQL 5.5
+# MySQL 5.6 + MariaDB
+# MySQL 8.x (NOT MariaDB!)
+```
+
+Uncomment the following line for Zabbix 5.4 and OLDER:
+```
+#       $dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
+```
+
+Comment the following line for Zabbix 6.4 and OLDER:
+```
+'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
+```
+
+[Run directly on your server](#run-directly-on-your-server) or [run in a Docker container](#run-in-a-docker-container).
+
+### Run directly on your server
 
 Place the script in (create the folder if it doesn't exist):
 ```
@@ -83,32 +103,76 @@ On a Debian based systems (like Ubuntu) run:
 apt-get install libdatetime-perl liblogger-syslog-perl libdbd-mysql-perl
 ```
 
-MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blog post for more information.
-```
-# MySQL 5.5
-# MySQL 5.6 + MariaDB
-# MySQL 8.x (NOT MariaDB!)
-```
-
-Uncomment the following line for Zabbix 5.4 and OLDER:
-```
-#       $dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
-```
-
-Comment the following line for Zabbix 6.4 and OLDER:
-```
-'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
-```
-
 That's it! You are now done and you have setup MySQL partitioning. We could execute the script manually with:
 ```
-perl /usr/lib/zabbix/mysql_zbx_part.pl
+perl /usr/share/zabbix/mysql_zbx_part.pl
 ```
 
 Then we can check and see if it worked with:
 ```
 journalctl -t mysql_zbx_part
 ```
+
+### Run in a Docker container
+
+#1 Assuming you are in the root directory of this Git repository.
+
+Edit the Dockerfile and uncomment the `ZABBIX_REPOSITORY` argument line according to your Docker host architecture (x86_64 or arm64), then build the Docker image:
+
+```
+docker build -t zabbix-db-partitioning .
+```
+
+Create log directory. This folder will be mounted as a volume in the container, thus persisting the logs for future reference.
+
+```
+mkdir logs
+sudo chgrp 999 logs/
+chmod 775 logs/
+```
+
+Create the `.env` file based on the [template](docker/.env.example) and edit it as per your environment.
+
+```
+cp docker/.env.example .env
+sudo chown root: .env
+sudo chmod 400 .env
+```
+
+The command below runs the container to perform the partitioning tasks and, when the perl script finishes executing, the container is automatically stopped and deleted.
+
+```
+sudo docker run --rm \
+  --name zabbix-db-partitioning \
+  -v ./logs:/logs \
+  --env-file ./.env \
+  zabbix-db-partitioning
+```
+
+After running the container, you can check the logs:
+```
+cat logs/mysql_zbx_part.log
+```
+
+Edit `root` user crontab:
+
+```
+crontab -e
+```
+
+Add the line in the crontab, adjusting the schedule. Change `project_dir` to the root directory of this Git repository on your file system.
+
+```
+55 22 * * * docker run --rm --name zabbix-db-partitioning -v /project_dir/logs:/logs --env-file /project_dir/.env zabbix-db-partitioning
+```
+
+To monitor Perl script execution:
+
+- Import the [zbx_mysql_partitioning_template.yaml](docker/zbx_mysql_partitioning_template.yaml) template into your Zabbix;
+- Add the template to an existing host or create a new host;
+- Uncomment and configure the `zabbix_sender` variables in the `.env` file;
+
+With that the container will send the result of executing the Perl script to your Zabbix and a trigger will be fired if an error occurs or if the script has not been executed in the last 2 days.
 
 ### Partitioning by week
 NOTE: See version 2.1 for older (before 20-09-2021) partitioned databases. Otherwise use 3.0+ upwards (recommended to use current).
