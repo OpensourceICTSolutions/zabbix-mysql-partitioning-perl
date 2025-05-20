@@ -74,7 +74,7 @@ my $amount_partitions = 10;
 
 # name templates for the different periods
 my $partition_name_templates = { 'day' => 'p%Y_%m_%d',
-		'week' => 'p%Y_w%W',
+		'week' => 'p%Y_w%V',
 		'month' => 'p%Y_%m',
 	};
 
