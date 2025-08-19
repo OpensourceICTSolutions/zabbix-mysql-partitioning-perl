@@ -222,7 +222,8 @@ sub date_next_part {
 
 sub delete_old_data {
 	$dbh->do("DELETE FROM sessions WHERE lastaccess < UNIX_TIMESTAMP(NOW() - INTERVAL 1 MONTH)");
-	$dbh->do("TRUNCATE housekeeper");
+        $dbh->do("DELETE FROM housekeeper WHERE `tablename` !='events'");
+
 # Uncomment the following line for Zabbix 5.4 and earlier
 #	$dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
 }
