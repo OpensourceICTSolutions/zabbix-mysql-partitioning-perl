@@ -27,8 +27,8 @@ Make sure to partition the database first. If you do not know how, check out thi
 https://blog.zabbix.com/partitioning-a-zabbix-mysql-database/13531/
 
 Or check out our Zabbix book for a detailed description:
-[https://www.thezabbixbook.com/ch01-zabbix-components/partitioning-database/
-](https://www.thezabbixbook.com/ch01-zabbix-components/partitioning-database/)
+[https://www.thezabbixbook.com/ch13-advanced-security/partitioning-database/
+](https://www.thezabbixbook.com/ch13-advanced-security/partitioning-database/)
 
 MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blog post for more information.
 ```
