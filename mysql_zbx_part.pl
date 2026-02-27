@@ -52,11 +52,11 @@ else {
 	use Sys::Syslog qw(:standard :macros);
 	openlog("mysql_zbx_part", "ndelay,pid", LOG_LOCAL0);
 
-	# edit next 5 lines if the script is run directly in your server
+	# edit login and timezone information if the script is run directly in your server (not for Docker)
 	$db_schema    = 'zabbix';
 	$db_user_name = 'zabbix';
 	$db_password  = 'password';
-	$curr_tz      = 'Etc/UTC';
+	$curr_tz      = 'Etc/UTC';             #For example 'Europe/Amsterdam'
 
 	# optional driver override outside container too, if you want it
 	$db_driver = $ENV{'DB_DRIVER'} if defined $ENV{'DB_DRIVER'};
@@ -78,7 +78,7 @@ if ($is_container) {
 	$dsn = 'DBI:'.$db_driver.':database='.$db_schema.';host='.$db_host.';port='.$db_port;
 }
 else {
-	# FIX: socket attribute depends on the DBD driver
+	# socket attribute depends on the DBD driver
 	my $socket_attr = (lc($db_driver) eq 'mariadb') ? 'mariadb_socket' : 'mysql_socket';
 	$dsn = 'DBI:'.$db_driver.':database='.$db_schema.';'.$socket_attr.'=/var/lib/mysql/mysql.sock';
 }

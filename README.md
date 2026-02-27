@@ -38,6 +38,15 @@ Make sure to pick correct mysql or MariaDB driver. Check the blog post for more 
 my $db_driver = 'MariaDB';
 ```
 
+Set login and timezone information:
+```
+	# edit next 5 lines if the script is run directly in your server
+	$db_schema    = 'zabbix';
+	$db_user_name = 'zabbix';
+	$db_password  = 'password';
+	$curr_tz      = 'Etc/UTC';
+```
+
 Comment the following line for Zabbix 6.4 and OLDER:
 ```
 'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
