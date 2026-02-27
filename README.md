@@ -10,6 +10,8 @@
 
 #5 For ZBX7.0 a new table was added (history_bin). As such, for older version we can comment the line that partitions this table.
 
+#6 Important note, big changes made in version 7.1.0. Entire logic for MySQL/MariaDB has been altered to allow for perl-DBD-* compatibility. Logic regarding backwards compatibility has changed as well.
+
 Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB and Zabbix version higher than 7.0.
 
 Also, see common issues at the bottom of the blog post.
@@ -30,16 +32,10 @@ Or check out our Zabbix book for a detailed description:
 [https://www.thezabbixbook.com/ch13-advanced-security/partitioning-database/
 ](https://www.thezabbixbook.com/ch13-advanced-security/partitioning-database/)
 
-MAKE SURE TO UNCOMMENT THE CORRECT LINES FOR THE VERSION YOU NEED. Check the blog post for more information.
+Make sure to pick correct mysql or MariaDB driver. Check the blog post for more information.
 ```
-# MySQL 5.5
-# MySQL 5.6 + MariaDB
-# MySQL 8.x (NOT MariaDB!)
-```
-
-Uncomment the following line for Zabbix 5.4 and OLDER:
-```
-#       $dbh->do("DELETE FROM auditlog_details WHERE NOT EXISTS (SELECT NULL FROM auditlog WHERE auditlog.auditid = auditlog_details.auditid)");
+# pick DBI driver at runtime (mysql or MariaDB)
+my $db_driver = 'MariaDB';
 ```
 
 Comment the following line for Zabbix 6.4 and OLDER:
@@ -74,13 +70,25 @@ Add the following line:
 We also need to install some Perl dependencies with:
 
 ```
-yum install perl-DateTime perl-Sys-Syslog perl-DBI perl-DBD-mysql
+dnf install perl-DateTime perl-Sys-Syslog perl-DBI
+
+```
+
+Important for MariaDB we need:
+```
+dnf install perl-DBD-MariaDB
+
+```
+
+for MySQL:
+```
+dnf install perl-DBD-mysql
 
 ```
 
 If perl-DateTime isn't available on your RHEL based installation make sure to install the powertools repo with:
 ```
-yum config-manager --set-enabled powertools
+dnf config-manager --set-enabled powertools
 ```
 On RHEL 9 based:
 ```

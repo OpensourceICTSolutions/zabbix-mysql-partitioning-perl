@@ -83,15 +83,15 @@ else {
 	$dsn = 'DBI:'.$db_driver.':database='.$db_schema.';'.$socket_attr.'=/var/lib/mysql/mysql.sock';
 }
 
-my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
-		'history_log' => { 'period' => 'day', 'keep_history' => '60'},
-		'history_str' => { 'period' => 'day', 'keep_history' => '60'},
-		'history_text' => { 'period' => 'day', 'keep_history' => '60'},
-		'history_uint' => { 'period' => 'day', 'keep_history' => '60'},
+my $tables = {  'history' => { 'period' => 'day', 'keep_history' => '60'},
+                'history_log' => { 'period' => 'day', 'keep_history' => '60'},
+                'history_str' => { 'period' => 'day', 'keep_history' => '60'},
+                'history_text' => { 'period' => 'day', 'keep_history' => '60'},
+                'history_uint' => { 'period' => 'day', 'keep_history' => '60'},
 # Comment the history_bin line below if you're running Zabbix versions older than 7.0
                 'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
-		'trends' => { 'period' => 'month', 'keep_history' => '12'},
-		'trends_uint' => { 'period' => 'month', 'keep_history' => '12'},
+                'trends' => { 'period' => 'month', 'keep_history' => '12'},
+                'trends_uint' => { 'period' => 'month', 'keep_history' => '12'},
 
 # comment next 5 lines if you partition zabbix database starting from 2.2
 # they usually used for zabbix database before 2.2
