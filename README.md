@@ -12,13 +12,11 @@
 
 #6 Important note, big changes made in version 7.1.0. Entire logic for MySQL/MariaDB has been altered to allow for perl-DBD-* compatibility. Logic regarding backwards compatibility has changed as well.
 
-Make sure to uncomment the correct lines (see blog post), the default is setup for MySQL 5.6 or MariaDB and Zabbix version higher than 7.0.
+Make sure to uncomment the correct lines (see blog post), the default is setup for MariaDB and Zabbix 7.0
 
 Also, see common issues at the bottom of the blog post.
 
 # Zabbix MySQL partitioning Perl script
-
-Disclaimer: This script isn't made by us, the original author is https://github.com/dotneft and the script was initially (slightly) modified by Rihards Olups. We've added it to Github so we can maintain it and provide easy access to the entire Zabbix community.
 
 Welcome to the Opensource ICT Solutions GitHub, where you'll find all kinds of useful Zabbix resources. This script is a script written in Perl to partition the Zabbix database tables in time based chunks. We can use this script to replace the Zabbix housekeeper process which tends to get too slow once you hit a certain database size.
 
@@ -213,3 +211,6 @@ To do so change the **period** value to **week** under **my $tables =**. Also ma
 
 The weekly partitioning setup IS NOT described in the Zabbix blog.
 
+
+# Final notes
+Disclaimer: This script isn't made by us, the original author is https://github.com/dotneft and the script was initially (slightly) modified by Rihards Olups. We've added it to Github so we can maintain it and provide easy access to the entire Zabbix community.
