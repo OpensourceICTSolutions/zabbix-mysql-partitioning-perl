@@ -16,8 +16,8 @@ my $db_user_name;
 my $db_password;
 my $curr_tz;
 
-# NEW: pick DBI driver at runtime (mysql or MariaDB)
-my $db_driver = 'mysql';
+# pick DBI driver at runtime (mysql or MariaDB)
+my $db_driver = 'MariaDB';
 
 if ($is_container) {
 	# check if environment variables exists
@@ -44,7 +44,7 @@ if ($is_container) {
 	$db_password  = $ENV{'DB_PASSWORD'};
 	$curr_tz      = $ENV{'TZ'};
 
-	# NEW: optional driver override in container (mysql or MariaDB)
+	# optional driver override in container (mysql or MariaDB)
 	# Example: DB_DRIVER=MariaDB
 	$db_driver = $ENV{'DB_DRIVER'} if defined $ENV{'DB_DRIVER'};
 }
@@ -58,11 +58,11 @@ else {
 	$db_password  = 'password';
 	$curr_tz      = 'Etc/UTC';
 
-	# NEW: optional driver override outside container too, if you want it
+	# optional driver override outside container too, if you want it
 	$db_driver = $ENV{'DB_DRIVER'} if defined $ENV{'DB_DRIVER'};
 }
 
-# NEW: normalize driver name (DBI wants MariaDB with that exact casing)
+# normalize driver name (DBI wants MariaDB with that exact casing)
 sub normalize_driver {
 	my $d = shift // 'mysql';
 	return 'MariaDB' if lc($d) eq 'mariadb';
@@ -73,13 +73,14 @@ sub normalize_driver {
 
 $db_driver = normalize_driver($db_driver);
 
-# NEW: build DSN in key/value style (portable across DBD::mysql and DBD::MariaDB)
+# build DSN in key/value style (portable across DBD::mysql and DBD::MariaDB)
 if ($is_container) {
 	$dsn = 'DBI:'.$db_driver.':database='.$db_schema.';host='.$db_host.';port='.$db_port;
 }
 else {
-	# keep your socket usage; driver mysql is typical here, but driver can be overridden via DB_DRIVER
-	$dsn = 'DBI:'.$db_driver.':database='.$db_schema.';mysql_socket=/var/lib/mysql/mysql.sock';
+	# FIX: socket attribute depends on the DBD driver
+	my $socket_attr = (lc($db_driver) eq 'mariadb') ? 'mariadb_socket' : 'mysql_socket';
+	$dsn = 'DBI:'.$db_driver.':database='.$db_schema.';'.$socket_attr.'=/var/lib/mysql/mysql.sock';
 }
 
 my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
@@ -111,7 +112,7 @@ my $partition_name_templates = { 'day' => 'p%Y_%m_%d',
 
 my $part_tables;
 
-# NEW: connect with sane DBI attributes (minimal change, more predictable errors)
+# connect with sane DBI attributes
 my %dbi_attrs = (
 	RaiseError => 1,
 	PrintError => 0,
