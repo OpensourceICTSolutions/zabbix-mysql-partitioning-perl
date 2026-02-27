@@ -118,7 +118,19 @@ dnf config-manager --set-enabled ol8_codeready_builder
 
 On a Debian based systems (like Ubuntu) run:
 ```
-apt-get install libdatetime-perl liblogger-syslog-perl libdbd-mysql-perl
+apt-get install libdatetime-perl liblogger-syslog-perl
+```
+
+Important for MariaDB we need:
+```
+apt-get install libdbd-mariadb-perl
+
+```
+
+for MySQL:
+```
+apt-get install libdbd-mysql-perl
+
 ```
 
 That's it! You are now done and you have setup MySQL partitioning. We could execute the script manually with:
