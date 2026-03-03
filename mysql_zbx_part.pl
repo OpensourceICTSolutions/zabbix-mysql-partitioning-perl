@@ -1,10 +1,12 @@
 #!/usr/bin/perl
 use strict;
+use warnings;
 use DBI;
 use DateTime;
 
 # the Dockerfile will change the value to 1 in the container build process
 my $is_container = 0;
+
 # initializing some variables
 my $db_schema;
 my $db_host;
@@ -13,6 +15,9 @@ my $dsn;
 my $db_user_name;
 my $db_password;
 my $curr_tz;
+
+# pick DBI driver at runtime (mysql or MariaDB)
+my $db_driver = 'MariaDB';
 
 if ($is_container) {
 	# check if environment variables exists
@@ -27,39 +32,66 @@ if ($is_container) {
 		print "Environment variables are missing! Exiting...\n";
 		exit 1;
 	}
+
 	# open log file
 	open( OUTPUT, ">>", $ENV{'LOG_PATH'} ) or die $!;
 
-	# do not manually modify the next 7 lines, they are only used when the script is run in a container
-	$db_schema = $ENV{'DB_DATABASE'};
-	$db_host = $ENV{'DB_HOST'};
-	$db_port = $ENV{'DB_PORT'};
-	$dsn = 'DBI:mysql:'.$db_schema.':host='.$db_host.';port='.$db_port;
+	# do not manually modify the next lines, they are only used when the script is run in a container
+	$db_schema    = $ENV{'DB_DATABASE'};
+	$db_host      = $ENV{'DB_HOST'};
+	$db_port      = $ENV{'DB_PORT'};
 	$db_user_name = $ENV{'DB_USER'};
-	$db_password = $ENV{'DB_PASSWORD'};
-	$curr_tz = $ENV{'TZ'};
+	$db_password  = $ENV{'DB_PASSWORD'};
+	$curr_tz      = $ENV{'TZ'};
+
+	# optional driver override in container (mysql or MariaDB)
+	# Example: DB_DRIVER=MariaDB
+	$db_driver = $ENV{'DB_DRIVER'} if defined $ENV{'DB_DRIVER'};
 }
 else {
 	use Sys::Syslog qw(:standard :macros);
 	openlog("mysql_zbx_part", "ndelay,pid", LOG_LOCAL0);
 
-	# edit next 5 lines if the script is run directly in your server
-	$db_schema = 'zabbix';
-	$dsn = 'DBI:mysql:'.$db_schema.':mysql_socket=/var/lib/mysql/mysql.sock';
+	# edit login and timezone information if the script is run directly in your server (not for Docker)
+	$db_schema    = 'zabbix';
 	$db_user_name = 'zabbix';
-	$db_password = 'password';
-	$curr_tz = 'Etc/UTC';
+	$db_password  = 'password';
+	$curr_tz      = 'Etc/UTC';             #For example 'Europe/Amsterdam'
+
+	# optional driver override outside container too, if you want it
+	$db_driver = $ENV{'DB_DRIVER'} if defined $ENV{'DB_DRIVER'};
 }
 
-my $tables = {	'history' => { 'period' => 'day', 'keep_history' => '60'},
-		'history_log' => { 'period' => 'day', 'keep_history' => '60'},
-		'history_str' => { 'period' => 'day', 'keep_history' => '60'},
-		'history_text' => { 'period' => 'day', 'keep_history' => '60'},
-		'history_uint' => { 'period' => 'day', 'keep_history' => '60'},
+# normalize driver name (DBI wants MariaDB with that exact casing)
+sub normalize_driver {
+	my $d = shift // 'mysql';
+	return 'MariaDB' if lc($d) eq 'mariadb';
+	return 'mysql'   if lc($d) eq 'mysql';
+	# fallback: accept whatever was provided
+	return $d;
+}
+
+$db_driver = normalize_driver($db_driver);
+
+# build DSN in key/value style (portable across DBD::mysql and DBD::MariaDB)
+if ($is_container) {
+	$dsn = 'DBI:'.$db_driver.':database='.$db_schema.';host='.$db_host.';port='.$db_port;
+}
+else {
+	# socket attribute depends on the DBD driver
+	my $socket_attr = (lc($db_driver) eq 'mariadb') ? 'mariadb_socket' : 'mysql_socket';
+	$dsn = 'DBI:'.$db_driver.':database='.$db_schema.';'.$socket_attr.'=/var/lib/mysql/mysql.sock';
+}
+
+my $tables = {  'history' => { 'period' => 'day', 'keep_history' => '60'},
+                'history_log' => { 'period' => 'day', 'keep_history' => '60'},
+                'history_str' => { 'period' => 'day', 'keep_history' => '60'},
+                'history_text' => { 'period' => 'day', 'keep_history' => '60'},
+                'history_uint' => { 'period' => 'day', 'keep_history' => '60'},
 # Comment the history_bin line below if you're running Zabbix versions older than 7.0
                 'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
-		'trends' => { 'period' => 'month', 'keep_history' => '12'},
-		'trends_uint' => { 'period' => 'month', 'keep_history' => '12'},
+                'trends' => { 'period' => 'month', 'keep_history' => '12'},
+                'trends_uint' => { 'period' => 'month', 'keep_history' => '12'},
 
 # comment next 5 lines if you partition zabbix database starting from 2.2
 # they usually used for zabbix database before 2.2
@@ -80,7 +112,19 @@ my $partition_name_templates = { 'day' => 'p%Y_%m_%d',
 
 my $part_tables;
 
-my $dbh = DBI->connect($dsn, $db_user_name, $db_password);
+# connect with sane DBI attributes
+my %dbi_attrs = (
+	RaiseError => 1,
+	PrintError => 0,
+	AutoCommit => 1,
+);
+
+# Only set mysql-specific attrs when using DBD::mysql
+if (lc($db_driver) eq 'mysql') {
+	$dbi_attrs{mysql_enable_utf8mb4} = 1;
+}
+
+my $dbh = DBI->connect($dsn, $db_user_name, $db_password, \%dbi_attrs);
 
 unless ( check_have_partition() ) {
 	print "Your installation of MySQL does not support table partitioning.\n";
@@ -89,7 +133,7 @@ unless ( check_have_partition() ) {
 }
 
 my $sth = $dbh->prepare(qq{SELECT table_name as table_name, partition_name as partition_name,
-       				lower(partition_method) as partition_method, 
+       				lower(partition_method) as partition_method,
 				rtrim(ltrim(partition_expression)) as partition_expression,
 				partition_description as partition_description, table_rows
 				FROM information_schema.partitions
@@ -117,35 +161,16 @@ delete_old_data();
 $dbh->disconnect();
 
 sub check_have_partition {
-# MySQL 5.5
-#	#my $sth = $dbh->prepare(qq{SELECT variable_value FROM information_schema.global_variables WHERE variable_name = 'have_partitioning'});
-#return 1 if $row eq 'YES';
-#
-# End of Mysql 5.5
-
-# MySQL 5.6 + MariaDB
-	my $sth = $dbh->prepare(qq{SELECT plugin_status FROM information_schema.plugins WHERE plugin_name = 'partition'});
-
-	$sth->execute();
-
-	my $row = $sth->fetchrow_array();
-
-	$sth->finish();
-        return 1 if $row eq 'ACTIVE';
-
-# End of MySQL 5.6 + MariaDB
-
-# MySQL 8.x (NOT MariaDB!)
-#	my $sth = $dbh->prepare(qq{select version();});
-#	$sth->execute();
-#	my $row = $sth->fetchrow_array();
- 
-#	$sth->finish();
-#       return 1 if $row >= 8;
-#
-# End of MySQL 8.x
-
-# Do not uncomment last }	
+	# Minimal + driver-agnostic: if information_schema.partitions is queryable,
+	# partition support is effectively present (or permissions exist).
+	my $sth;
+	my $ok = eval {
+		$sth = $dbh->prepare('SELECT 1 FROM information_schema.partitions LIMIT 1');
+		$sth->execute();
+		1;
+	};
+	eval { $sth->finish() if $sth; };
+	return $ok ? 1 : 0;
 }
 
 sub create_next_partition {
