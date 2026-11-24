@@ -12,7 +12,9 @@
 
 #6 Important note, big changes made in version 7.1.0. Entire logic for MySQL/MariaDB has been altered to allow for perl-DBD-* compatibility. Logic regarding backwards compatibility has changed as well.
 
-Make sure to uncomment the correct lines (see blog post), the default is setup for MariaDB and Zabbix 7.0
+#7 Zabbix 8.0 adds the history_json table. Comment its configuration line when using Zabbix 7.4 or older.
+
+Make sure to comment or uncomment the correct lines (see blog post); the default is set up for MariaDB and Zabbix 8.0.
 
 Also, see common issues at the bottom of the blog post.
 
@@ -46,8 +48,15 @@ Set login and timezone information:
 ```
 
 Comment the following line for Zabbix 6.4 and OLDER:
+
 ```
 'history_bin' => { 'period' => 'day', 'keep_history' => '60'},
+```
+
+Comment the following line for Zabbix 7.4 and OLDER:
+
+```
+'history_json' => { 'period' => 'day', 'keep_history' => '60'},
 ```
 
 [Run directly on your server](#run-directly-on-your-server) or [run in a Docker container](#run-in-a-docker-container).
